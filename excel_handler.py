@@ -15,6 +15,15 @@ def salvar_disco(disco):
     df = pd.concat([df, novo], ignore_index=True)
     df.to_excel(ARQUIVO, index=False)
 
+def ordenar_planilha():
+    try:
+        df = pd.read_excel(ARQUIVO)
+        df = df.sort_values(by="Nome")
+        df.to_excel(ARQUIVO, index=False)
+        print(">> Planilha ordenada.")
+    except Exception as e:
+        print(f"Erro ao ordenar planilha: {e}")
+
 def carregar_discos():
     if os.path.exists(ARQUIVO):
         return pd.read_excel(ARQUIVO)

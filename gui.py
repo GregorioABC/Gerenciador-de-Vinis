@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from PIL import ImageTk, Image
 import os
-from excel_handler import salvar_disco, carregar_discos, excluir_disco, inicializar_planilha
+from excel_handler import salvar_disco, carregar_discos, excluir_disco, inicializar_planilha, ordenar_planilha
 
 def iniciar_interface():
     inicializar_planilha()
@@ -97,6 +97,26 @@ def iniciar_interface():
         messagebox.showinfo("Excluído", "Disco excluído com sucesso.")
 
     ttk.Button(frame, text="Excluir Selecionado", command=deletar_disco).grid(row=6, column=0, columnspan=2)
+    
+    def mostrar_imagem(event):
+        selecionado = tabela.selection()
+        if selecionado:
+            indice = int(selecionado[0])
+            df = carregar_discos()
+            caminho_imagem = df.loc[indice, "Imagem"]
+            if caminho_imagem and os.path.exists(caminho_imagem):
+                img = Image.open(caminho_imagem)
+                img.thumbnail((200, 200))
+                img_tk = ImageTk.PhotoImage(img)
+                label_imagem.configure(image=img_tk)
+                label_imagem.image = img_tk  
+            else:
+                label_imagem.configure(image="")
+                label_imagem.image = None
+
+    tabela.bind("<<TreeviewSelect>>", mostrar_imagem)
+    label_imagem = ttk.Label(frame)
+    label_imagem.grid(row=0, column=4, rowspan=6, padx=10)
 
     atualizar_tabela()
     janela.mainloop()

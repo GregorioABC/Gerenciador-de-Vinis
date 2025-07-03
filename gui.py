@@ -1,92 +1,102 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
-from excel_handler import salvar_disco, ordenar_planilha, carregar_discos, excluir_disco
-from tkinter import ttk 
+from tkinter import ttk, filedialog, messagebox
+from PIL import ImageTk, Image
+import os
+from excel_handler import salvar_disco, carregar_discos, excluir_disco, inicializar_planilha
 
 def iniciar_interface():
-    #personalização do tkinter
+    inicializar_planilha()
+
     janela = tk.Tk()
     janela.title("Gerenciador de Vinis")
-    janela.configure(bg="white")
-    janela.geometry("500x500")
+    janela.geometry("800x600")
+    janela.configure(bg="#f4f4f4")
 
-    titulo = ttk.Label(janela, text="Gerenciador de Vinis", font=("Helvetica", 18))
-    titulo.pack(pady=10)
+    style = ttk.Style()
+    style.theme_use("clam")
+    style.configure("TButton", font=("Segoe UI", 10), padding=6, relief="flat", background="#2d89ef", foreground="white")
+    style.configure("Treeview", font=("Segoe UI", 10), rowheight=30)
+    style.configure("TLabel", background="#f4f4f4")
 
-    nome_var = tk.StringVar()
-    artista_var = tk.StringVar()
-    genero_var = tk.StringVar()
-    preco_var = tk.StringVar()
-    imagem_var = tk.StringVar()
-    disponibilidade_var = tk.BooleanVar(value=True)
+    frame = ttk.Frame(janela, padding=20)
+    frame.pack(fill="both", expand=True)
+
+    nome = tk.StringVar()
+    artista = tk.StringVar()
+    preco = tk.StringVar()
+    disponibilidade = tk.BooleanVar()
+    imagem_path = tk.StringVar()
+
+    ttk.Label(frame, text="Nome do Vinil:").grid(row=0, column=0, sticky="w")
+    ttk.Entry(frame, textvariable=nome, width=40).grid(row=0, column=1, pady=5, columnspan=2)
+
+    ttk.Label(frame, text="Nome do Artista:").grid(row=1, column=0, sticky="w")
+    ttk.Entry(frame, textvariable=artista, width=40).grid(row=1, column=1, pady=5, columnspan=2)
+
+    ttk.Label(frame, text="Preço:").grid(row=2, column=0, sticky="w")
+    ttk.Entry(frame, textvariable=preco, width=20).grid(row=2, column=1, pady=5)
+
+    ttk.Checkbutton(frame, text="Disponível", variable=disponibilidade).grid(row=3, column=0, pady=5, sticky="w")
+
+    def escolher_imagem():
+        caminho = filedialog.askopenfilename(title="Escolher imagem", filetypes=[("Imagens", "*.jpg *.png *.jpeg")])
+        if caminho:
+            imagem_path.set(caminho)
+
+    ttk.Button(frame, text="Selecionar Imagem", command=escolher_imagem).grid(row=3, column=1, pady=5)
 
     def salvar():
-        dados = {
-            "nome": nome_var.get(),
-            "artista": artista_var.get(),
-            "genero": genero_var.get(),
-            "preco": preco_var.get(),
-            "imagem": imagem_var.get(),
-            "disponivel": disponibilidade_var.get()
+        if not nome.get() or not preco.get():
+            messagebox.showerror("Erro", "Nome e preço são obrigatórios.")
+            return
+        disco = {
+            "Nome": nome.get(),
+            "Artista":artista.get(),
+            "Preço": preco.get(),
+            "Disponibilidade": "Sim" if disponibilidade.get() else "Não",
+            "Imagem": imagem_path.get()
         }
-        print(">> Dados recebidos do formulário:", dados)
-        salvar_disco(dados)
-        ordenar_planilha()
-        messagebox.showinfo("Sucesso", "Disco salvo!")
-        limpar_campos()
+        salvar_disco(disco)
+        messagebox.showinfo("Salvo", "Disco salvo com sucesso!")
+        nome.set("")
+        artista.set("")
+        preco.set("")
+        disponibilidade.set(False)
+        imagem_path.set("")
+        atualizar_tabela()
 
-    def limpar_campos():
-        nome_var.set("")
-        artista_var.set("")
-        genero_var.set("")
-        preco_var.set("")
-        imagem_var.set("")
-        disponibilidade_var.set(True)
+    ttk.Button(frame, text="Salvar Disco", command=salvar).grid(row=4, column=1, pady=10)
 
-    def selecionar_imagem():
-        caminho = filedialog.askopenfilename()
-        if caminho:
-            imagem_var.set(caminho)
+    # Tabela
+    tabela = ttk.Treeview(frame, columns=("Nome","Artista", "Preço", "Disponibilidade", "Imagem"), show="headings")
+    for col in ("Nome","Artista", "Preço", "Disponibilidade", "Imagem"):
+        tabela.heading(col, text=col)
+        tabela.column(col, minwidth=50, width=120)
+    tabela.grid(row=5, column=0, columnspan=3, sticky="nsew", pady=10)
 
-    def mostrar_discos():
-        nova_janela = tk.Toplevel()
-        nova_janela.title("Vinis Salvos")
+    # Scrollbar
+    scrollbar = ttk.Scrollbar(frame, orient="vertical", command=tabela.yview)
+    tabela.configure(yscroll=scrollbar.set)
+    scrollbar.grid(row=5, column=3, sticky="ns")
 
+    def atualizar_tabela():
+        for i in tabela.get_children():
+            tabela.delete(i)
         df = carregar_discos()
+        for i, row in df.iterrows():
+            tabela.insert("", "end", iid=i, values=list(row))
 
-        for idx, row in df.iterrows():
-            frame = tk.Frame(nova_janela, pady=2)
-            frame.pack(fill="x")
+    def deletar_disco():
+        selecionado = tabela.selection()
+        if not selecionado:
+            messagebox.showwarning("Aviso", "Selecione um item para excluir.")
+            return
+        indice = int(selecionado[0])
+        excluir_disco(indice)
+        atualizar_tabela()
+        messagebox.showinfo("Excluído", "Disco excluído com sucesso.")
 
-            info = f"{row['Nome']} - {row['Artista']} | {row['Gênero']} | R$ {row['Preço']} | {'Disponível' if row['Disponível'] else 'Indisponível'}"
-            tk.Label(frame, text=info, anchor="w").pack(side="left", expand=True, fill="x")
+    ttk.Button(frame, text="Excluir Selecionado", command=deletar_disco).grid(row=6, column=0, columnspan=2)
 
-            tk.Button(frame, text="Excluir", command=lambda nome=row['Nome']: excluir_e_atualizar(nome, nova_janela)).pack(side="right")
-
-    def excluir_e_atualizar(nome, janela):
-        excluir_disco(nome)
-        for widget in janela.winfo_children():
-            widget.destroy()
-        mostrar_discos()
-
-    # ----- Layout principal -----
-    tk.Label(janela, text="Nome do Disco").pack()
-    tk.Entry(janela, textvariable=nome_var).pack()
-
-    tk.Label(janela, text="Artista").pack()
-    tk.Entry(janela, textvariable=artista_var).pack()
-
-    tk.Label(janela, text="Gênero").pack()
-    tk.Entry(janela, textvariable=genero_var).pack()
-
-    tk.Label(janela, text="Preço").pack()
-    tk.Entry(janela, textvariable=preco_var).pack()
-
-    tk.Button(janela, text="Selecionar Imagem", command=selecionar_imagem).pack()
-
-    tk.Checkbutton(janela, text="Disponível", variable=disponibilidade_var).pack()
-
-    tk.Button(janela, text="Salvar Disco", command=salvar).pack(pady=10)
-    tk.Button(janela, text="Mostrar Vinis", command=mostrar_discos).pack(pady=5)
-
+    atualizar_tabela()
     janela.mainloop()

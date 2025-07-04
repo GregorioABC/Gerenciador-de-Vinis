@@ -57,6 +57,7 @@ def iniciar_interface():
             "Imagem": imagem_path.get()
         }
         salvar_disco(disco)
+        ordenar_planilha()
         messagebox.showinfo("Salvo", "Disco salvo com sucesso!")
         nome.set("")
         artista.set("")

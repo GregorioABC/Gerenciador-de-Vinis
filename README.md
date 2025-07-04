@@ -7,13 +7,14 @@ Este software foi desenvolvido para facilitar o gerenciamento de uma coleção d
 - Excluir registros da planilha
 - Organiza a planilha em ordem alfabetica pelo nome do Artista
 
+<img src="/assets/Software.png">
+
 ## Tecnologias Utilizadas
 
 - Python  
 - Tkinter (interface gráfica)  
 - Pandas e OpenPyXL (manipulação de arquivos Excel)
 
-<img src="/assets/Software.png">
 
 ## Como Executar
 

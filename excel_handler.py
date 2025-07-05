@@ -2,7 +2,8 @@ import pandas as pd
 from openpyxl import load_workbook
 import os
 
-ARQUIVO = "planilha.xlsx"
+#colocar o endereço da planilha 
+ARQUIVO = "G:/Meu Drive/Vinil/Nacional/planilha.xlsx"
 
 def inicializar_planilha():
     if not os.path.exists(ARQUIVO):

@@ -11,7 +11,7 @@ Este software foi desenvolvido para facilitar o gerenciamento de uma coleção d
 
 ## Tecnologias Utilizadas
 
-- Python  
+- Python 3.15.0 
 - Tkinter (interface gráfica)  
 - Pandas e OpenPyXL (manipulação de arquivos Excel)
 
@@ -21,4 +21,4 @@ Este software foi desenvolvido para facilitar o gerenciamento de uma coleção d
 Antes de executar o projeto, instale as dependências necessárias com o seguinte comando:
 
 ```bash
-pip install openpyxl pandas pillow
+pip install openpyxl pandas pillow tkinter

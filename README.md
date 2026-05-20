@@ -20,5 +20,11 @@ Este software foi desenvolvido para facilitar o gerenciamento de uma coleção d
 
 Antes de executar o projeto, instale as dependências necessárias com o seguinte comando:
 
+### Windows
 ```bash
 pip install openpyxl pandas pillow tkinter
+```
+### Linux Ubunto
+```bash
+sudo apt-get install python3-pandas python3-openpyxl python3-pil python3-tk
+```
